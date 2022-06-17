@@ -41,7 +41,10 @@ function requestXHR (url, method, number, async) {
     const xhr = new XMLHttpRequest()
     xhr.open (method, (url + number), async)
     xhr.onload = function () {
-        outputCards(xhr.response)
+        if (xhr.status == 200) {
+            outputCards(xhr.response)
+        } else console.log(xhr.status)
+
     }
     xhr.onerror = function () {
         console.log('ошибка запроса')
