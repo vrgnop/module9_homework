@@ -1,11 +1,9 @@
-// Задание 5
-
 function inputNumbersOutputPictures () {
     //Вводим нужные переменные
     let form = document.querySelector('.form') //Форма
     const answer = document.createElement('div') //Див для ответа, если пользователь вводит не те значения
     const gridResult = document.createElement('grid') //Грид при успешной отработке гет запроса и вывода результата
-    const requestURL = `https://picsum.photos/v2/list?` // Урл для запроса
+    const requestURL = `https://picsum.photos/v2/list?page=1&limit=2` // Урл для запроса
     let localStorageHTML =  localStorage.getItem('arrayStorage') != null ? localStorage.getItem('arrayStorage').split(',') : '' // Переменная для хранения локал сторедж
     // Вызываем функцию которая выводит картинки из локал сторедж
     innerStorage()
@@ -24,27 +22,23 @@ function inputNumbersOutputPictures () {
         let sumCorrectInput = 0
         let inputWrongIndex = []
         let arrayParamsRequest = []
-        let paramsRequest = ''
         array.forEach((element, number) => {
             element.classList.remove('err')
             if (element.value <= 10 && element.value > 0) {
                 sumCorrectInput += 1
-                if (number === 0) {
-                    arrayParamsRequest.push('page=' + element.value)
-                } else arrayParamsRequest.push('limit=' + element.value)
+                    arrayParamsRequest.push(element.value)
             } else inputWrongIndex.push(number)
         })
-        paramsRequest = arrayParamsRequest.join('&')
-        innerResult(sumCorrectInput, inputWrongIndex, paramsRequest)
-        console.log(paramsRequest)
+        let urlRequest = getURL(arrayParamsRequest)
+        innerResult(sumCorrectInput, inputWrongIndex, urlRequest)
     }
 
 
 // Выводим результат при всевозможных исходах. При успешном исходе отправляем параметры и урл в функцию создания запроса
-    function innerResult (number, indexes, params) {
+    function innerResult (number, indexes, url) {
         form.insertBefore(answer, form.querySelector('.submit').nextSibling)
         if (number  === 2) {
-            fetchRequest(requestURL, params)
+            fetchRequest(url)
         } else if (number  === 1) {
             form.querySelectorAll('.input')[indexes].classList.add('err')
             answer.innerHTML = `<span class="answer"> ${form.querySelectorAll('.label')[indexes].textContent} вне диапазона от 1 до 10 </span>`
@@ -54,13 +48,20 @@ function inputNumbersOutputPictures () {
         }
     }
 // Создаем фетч запрос с нужными параметрами и передаем в функцию вставить картинки дату
-    function fetchRequest (url, params) {
-        console.log(url + params)
-        fetch (url + params)
+    function fetchRequest (url) {
+        console.log(url)
+        fetch (url)
             .then(response => response.json())
             .then(data => {
                 innerPicture(data)
             })
+    }
+//Получаем нужную ссылку из инпутов
+    function getURL (arrayParams) {
+        let url = new URL(requestURL)
+        url.searchParams.set('page', arrayParams[0])
+        url.searchParams.set('limit', arrayParams[1])
+        return url.href
     }
 // Создаем функцию вставки картинок, добавляем также массив с дивами в локал сторедж, чтобы при обновлении страницы эти картинки не пропали
     function innerPicture (arrayObjectInRequest) {
